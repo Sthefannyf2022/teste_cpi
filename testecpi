@@ -1,0 +1,62 @@
+import com.sap.gateway.ip.core.customdev.util.Message;
+import java.util.HashMap;
+import groovy.json.*;
+
+def Message processData(Message message){           
+
+        def body = message.getBody(String)
+        def jsonParser = new JsonSlurper()
+        def jsonObj = jsonParser.parseText(body)
+        def builder = new JsonBuilder()
+        def array = []
+        def json
+
+       def d = builder {
+            "d" {
+             "results" array
+            }
+            
+        }
+       
+        for(int i = 0; i < jsonObj.d.results.size(); i ++ ){
+        int a
+
+        json = builder {
+        "codigoExterno" jsonObj.d.results[i].externalCode
+        "Matricula" jsonObj.d.results[i].userId
+        "dataCriacao" jsonObj.d.results[i].createdDateTime
+        "tipoAusencia" jsonObj.d.results[i].timeType
+        "Codcid" jsonObj.d.results[i].cust_CID
+
+        a = i 
+        "periodo"{
+
+        "dataInicio" jsonObj.d.results[a].startDate
+        "quantidadedeDias" jsonObj.d.results[a].quantityInDays
+        "datafim" jsonObj.d.results[a].endDate
+        
+        //  "periodo"{
+        //      "dataInicio" jsonObj.d.results[i].startDate
+        // }
+       
+       // "dataInicio" jsonObj.d.results[i].startDate
+        
+         if(jsonObj.d.results[a].undeterminedEndDate == true){
+             "datafim" jsonObj.d.results[a].endDate = "Indeterminado"
+          }
+         else if (jsonObj.d.results[a].undeterminedEndDate == false){
+            "datafim"  jsonObj.d.results[a].endDate 
+            
+          }
+        }
+         
+        }
+    array.add(json)
+
+}
+        
+message.setBody(JsonOutput.prettyPrint(JsonOutput.toJson(d)))
+println (JsonOutput.prettyPrint(JsonOutput.toJson(d)))
+return message;
+ 
+}
